@@ -2,7 +2,7 @@
 let searchResultElement = document.querySelector('#search-result')
 // Placeholder to display the Pokeball image on the footer.
 let pokeBallElement = document.querySelector('#pokeball-footer')
-// Pokemon Image (front).
+// Pokémon Image (front).
 let pokeImageFront = document.querySelector('#poke-image-front')
 // Search field for user input.
 let pokeSearchElement = document.querySelector('#poke-search')
@@ -12,45 +12,51 @@ let timeElement = document.querySelector('#time')
 let submitButton = document.querySelector("#submit-answer")
 // Placeholder which accepts user input.
 let userAnswerElement = document.querySelector('#user-answer')
-// Placeholder to display the Pokemon statistics (move/more information)
-let pokemonStatisticsTable = document.querySelector('#pokemon-statistics')
+// Placeholder to display the Pokémon statistics (move/more information)
+let pokemonStatisticsTableBody = document.querySelector('#pokemon-statistics')
 // Placeholder to display the move effect when the Modal is open.
 let moveDataEffectDetails = document.querySelector('#move-data-container')
 // Placeholder to display the Modal title.
-let moveNameModalTitle = document.querySelector('#exampleModalLabel')
-
+let moveNameModalTitle = document.querySelector('#pokemonModalLabel')
+// Placeholder to make the Pokémon statistics table visible.
 let pokemonStatisticsContainer = document.querySelector('#pokemon-statistics-container')
 
     /* The submit button takes the user input, and if valid, makes an API call
-        to the server, and if successful, returns a list of available Pokemon "moves",
+        to the server, and if successful, returns a list of available Pokémon "moves",
         with a button that allows the user to create a second request for additional
         "move" information.
     */
     submitButton.addEventListener('click', () => {
-        // Clear the search result element.
-        searchResultElement.innerHTML = ''
-        // Read the user input, enforcing a lower-case policy.
+        // Read the user input, converting any uppercase characters to lowercase.
         let userAnswer = userAnswerElement.value.toLowerCase()
 
         // If we don't have any text, prevent processing.
         if (userAnswer == '') {
-            searchResultElement.innerHTML = 'Please enter a valid Pokemon name!'
+            searchResultElement.innerHTML = 'Please enter a valid Pokémon name!'
             return
         }
 
         // Process the request by using the user input as the endpoint.
         let pokemonApiUrl = `https://pokeapi.co/api/v2/pokemon/${userAnswer}`
+            searchResultElement.innerHTML = 'Searching for Pokémon. Please wait...'
             fetch(pokemonApiUrl)
-                .then((response) => response.json())
+                .then((response) => { 
+                        if (response.status == 404) {
+                            searchResultElement.innerHTML = 'Pokémon NOT FOUND!'
+                            return
+                        }
+                        response.json()
+                })
                 .then((data) => {
-                    // Update the search result element to display that we've found a Pokemon.
+                    // Update the search result element to display that we've found a Pokémon.
                     searchResultElement.innerHTML = `I found information on ${data.name}!`
-    
+                    pokemonStatisticsTableBody.innerHTML = ''
+
                     // Fetch the (front) image from the object.
                     pokeImageFront.src = data.sprites.front_default
                     
-                    /*Iterate over each "move" in the API, and extract
-                       the name and link associated with it.
+                    /* Iterate over each "move" in the API, and extract
+                        the name and link associated with it.
                     */
                     data.moves.forEach((moveList) => {
                         console.log(moveList.move.name)
@@ -62,24 +68,25 @@ let pokemonStatisticsContainer = document.querySelector('#pokemon-statistics-con
                         
                         movesTableData.innerHTML = moveList.move.name
                         movesRow.appendChild(movesTableData)
-                        pokemonStatisticsTable.appendChild(movesRow)
+                        pokemonStatisticsTableBody.appendChild(movesRow)
 
                         // Create the "More Information" table.
                         let moreInfoRow = document.createElement('tr')
 
-                        pokemonStatisticsTable.appendChild(moreInfoRow)
+                        pokemonStatisticsTableBody.appendChild(moreInfoRow)
 
                         let moreInfoButton = document.createElement('button')
                         moreInfoButton.innerHTML = "Click for more Info!"
-                        pokemonStatisticsTable.appendChild(moreInfoButton)
+                        pokemonStatisticsTableBody.appendChild(moreInfoButton)
                         moreInfoButton.src = moveList.move.url
                         movesRow.appendChild(moreInfoButton)
 
+                        // Display the statitics table (move/more information).
                         pokemonStatisticsContainer.style.display = 'block'
 
-                        /* When the user successfully retrieves a Pokemon, 
+                        /* When the user successfully retrieves a Pokémon, 
                             add a button for them to click and obtain 
-                            additional information about the Pokemon's
+                            additional information about the Pokémon's
                             ability. This is done by creating a second fetch
                             call to another API (the URL from the other fetch). */
                         moreInfoButton.addEventListener('click', () => {
@@ -92,21 +99,21 @@ let pokemonStatisticsContainer = document.querySelector('#pokemon-statistics-con
                             moveNameModalTitle.innerHTML = 'Obtaining data...'
                             moveDataEffectDetails.innerHTML = "Obtaining data..."
 
-                            /*  Create a second fetch to retrieve the second JSON data.
-                                 This request takes the object's URL property as an input,
-                                 from which we requested by clicking the Submit button.
+                            /* Create a second fetch to retrieve the second JSON data.
+                                his request takes the object's URL property as an input,
+                                from which we requested by clicking the Submit button.
                             */
-                            fetch(moveList.move.url).then((responseTo) => responseTo.json())
-                                .then((dataTo) => {
+                            fetch(moveList.move.url).then((response) => response.json())
+                                .then((data) => {
                                     moveNameModalTitle.innerHTML = `More information on ${moveList.move.name}`
                                     /* If the object contains a null value within the Power property,
                                         let the user know that no Power value is available. */
-                                    if (!dataTo.power) {
+                                    if (!data.power) {
                                         moveDataEffectDetails.innerHTML = `<b>Description:</b>&nbsp;
-                                        ${dataTo.effect_entries[0].effect} <b>Power: This move has no power value.</b>`   
+                                        ${data.effect_entries[0].effect} <b>Power: This move has no power value.</b>`   
                                     } else {
                                         moveDataEffectDetails.innerHTML = `<b>Description:</b>&nbsp;
-                                        ${dataTo.effect_entries[0].effect} <b>Power:</b> ${dataTo.power}`   
+                                        ${data.effect_entries[0].effect} <b>Power:</b> ${data.power}`   
                                     }
                                 })
                             }
@@ -119,10 +126,15 @@ let pokemonStatisticsContainer = document.querySelector('#pokemon-statistics-con
                     // Display the Pokeball footer.
                     pokeBallElement.style.display = "block"
 
-                // If we run into an error white fetching the API, alert the user
-                //  and prevent further processing.
+                /* If we run into an error white fetching the API, alert the user,
+                    clear the search box,
+                    and prevent further processing.
+                */
                 }).catch((err) => {
-                    alert('ERROR! We either failed to find the pokemon, or an unexpected error occured.', err)
+                    console.log(err)
+                    searchResultElement.innerHTML = 'ERROR! An unexpected error occured.'
+                    pokemonStatisticsTableBody.innerHTML = ''
+                    userAnswerElement.value = ''
                     return
                 })
         }
