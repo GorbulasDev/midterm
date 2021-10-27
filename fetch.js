@@ -4,8 +4,6 @@ let searchResultElement = document.querySelector('#search-result')
 let pokeBallElement = document.querySelector('#pokeball-footer')
 // Pokemon Image (front).
 let pokeImageFront = document.querySelector('#poke-image-front')
-// Pokemon Image (Back).
-let pokeImageBack = document.querySelector('#poke-image-back')
 // Search field for user input.
 let pokeSearchElement = document.querySelector('#poke-search')
 // Placeholder to display the time and date.
@@ -29,11 +27,14 @@ let pokemonStatisticsContainer = document.querySelector('#pokemon-statistics-con
         "move" information.
     */
     submitButton.addEventListener('click', () => {
+        // Clear the search result element.
+        searchResultElement.innerHTML = ''
         // Read the user input, enforcing a lower-case policy.
         let userAnswer = userAnswerElement.value.toLowerCase()
 
         // If we don't have any text, prevent processing.
         if (userAnswer == '') {
+            searchResultElement.innerHTML = 'Please enter a valid Pokemon name!'
             return
         }
 
@@ -42,14 +43,11 @@ let pokemonStatisticsContainer = document.querySelector('#pokemon-statistics-con
             fetch(pokemonApiUrl)
                 .then((response) => response.json())
                 .then((data) => {
-                    // Log the object for testing.
-                    console.log(data)
-    
+                    // Update the search result element to display that we've found a Pokemon.
                     searchResultElement.innerHTML = `I found information on ${data.name}!`
     
-                    // Extract image data from the object.
+                    // Fetch the (front) image from the object.
                     pokeImageFront.src = data.sprites.front_default
-                    pokeImageBack.src = data.sprites.back_default
                     
                     /*Iterate over each "move" in the API, and extract
                        the name and link associated with it.
