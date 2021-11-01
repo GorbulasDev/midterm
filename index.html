@@ -33,27 +33,6 @@
         </div>
     </div>
 
-    <!-- Modal popup which displays "move" title and its associative description -->
-    <div class="modal fade" id="moreInformationModal" tabindex="-1" role="dialog" aria-labelledby="pokemonModalLabel" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-            <h5 class="modal-title" id="pokemonModalLabel"></h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
-            </div>
-
-            <div class="modal-body">
-                <div id="move-data-container"></div>
-            </div>
-            
-            <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Got it!</button>
-            </div>
-        </div>
-        </div>
-    </div>
 
     <h3 id="search-result"></h3>
 
@@ -85,7 +64,29 @@
         <img src="images/pokeball_footer.png" width="100" height="100" alt="Image of a Pokeball">
     </div>
 
+    <!-- Display the time and date -->
     <div id="time"></div>
+    
+    <!-- Modal popup which displays "move" title and its associative description -->
+    <div class="modal fade" id="moreInformationModal" tabindex="-1" role="dialog" aria-labelledby="pokemonModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+            <h5 class="modal-title" id="pokemonModalLabel"></h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            </div>
+
+            <div class="modal-body">
+                <div id="move-data-container"></div>
+            </div>
+            
+            <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Got it!</button>
+            </div>
+        </div>
+        </div>
     </div>
 </body>
 

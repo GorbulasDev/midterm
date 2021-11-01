@@ -40,84 +40,85 @@ let pokemonStatisticsContainer = document.querySelector('#pokemon-statistics-con
         let pokemonApiUrl = `https://pokeapi.co/api/v2/pokemon/${userAnswer}`
             searchResultElement.innerHTML = 'Searching for Pokémon. Please wait...'
             fetch(pokemonApiUrl)
-                .then((response) => { 
+                .then((response) => {
                         if (response.status == 404) {
-                            searchResultElement.innerHTML = 'Pokémon NOT FOUND!'
-                            return
+                            searchResultElement.innerHTML = 'Pokémon NOT FOUND! Please try again.'
+                        } else { 
+                            return response.json()
                         }
-                        response.json()
                 })
                 .then((data) => {
-                    // Update the search result element to display that we've found a Pokémon.
-                    searchResultElement.innerHTML = `I found information on ${data.name}!`
-                    pokemonStatisticsTableBody.innerHTML = ''
+                    if (data) {
+                        // Update the search result element to display that we've found a Pokémon.
+                        searchResultElement.innerHTML = `I found information on ${data.name}!`
+                        pokemonStatisticsTableBody.innerHTML = ''
 
-                    // Fetch the (front) image from the object.
-                    pokeImageFront.src = data.sprites.front_default
-                    
-                    /* Iterate over each "move" in the API, and extract
-                        the name and link associated with it.
-                    */
-                    data.moves.forEach((moveList) => {
-                        console.log(moveList.move.name)
-                        console.log(moveList.move.url)
-
-                        // Create the "Move" table.
-                        let movesRow = document.createElement('tr')
-                        let movesTableData = document.createElement('td')
+                        // Fetch the (front) image from the object.
+                        pokeImageFront.src = data.sprites.front_default
                         
-                        movesTableData.innerHTML = moveList.move.name
-                        movesRow.appendChild(movesTableData)
-                        pokemonStatisticsTableBody.appendChild(movesRow)
+                        /* Iterate over each "move" in the API, and extract
+                            the name and link associated with it.
+                        */
+                        data.moves.forEach((moveList) => {
+                            console.log(moveList.move.name)
+                            console.log(moveList.move.url)
 
-                        // Create the "More Information" table.
-                        let moreInfoRow = document.createElement('tr')
+                            // Create the "Move" table.
+                            let movesRow = document.createElement('tr')
+                            let movesTableData = document.createElement('td')
+                            
+                            movesTableData.innerHTML = moveList.move.name
+                            movesRow.appendChild(movesTableData)
+                            pokemonStatisticsTableBody.appendChild(movesRow)
 
-                        pokemonStatisticsTableBody.appendChild(moreInfoRow)
+                            // Create the "More Information" table.
+                            let moreInfoRow = document.createElement('tr')
 
-                        let moreInfoButton = document.createElement('button')
-                        moreInfoButton.innerHTML = "Click for more Info!"
-                        pokemonStatisticsTableBody.appendChild(moreInfoButton)
-                        moreInfoButton.src = moveList.move.url
-                        movesRow.appendChild(moreInfoButton)
+                            pokemonStatisticsTableBody.appendChild(moreInfoRow)
 
-                        // Display the statitics table (move/more information).
-                        pokemonStatisticsContainer.style.display = 'block'
+                            let moreInfoButton = document.createElement('button')
+                            moreInfoButton.classList.add('btn-primary')
+                            moreInfoButton.innerHTML = "Click for more Info!"
+                            pokemonStatisticsTableBody.appendChild(moreInfoButton)
+                            moreInfoButton.src = moveList.move.url
+                            movesRow.appendChild(moreInfoButton)
 
-                        /* When the user successfully retrieves a Pokémon, 
-                            add a button for them to click and obtain 
-                            additional information about the Pokémon's
-                            ability. This is done by creating a second fetch
-                            call to another API (the URL from the other fetch). */
-                        moreInfoButton.addEventListener('click', () => {
-                            // Open the modal menu.
-                            $('#moreInformationModal').modal()
+                            // Display the statitics table (move/more information).
+                            pokemonStatisticsContainer.style.display = 'block'
 
-                            /* Let the user know we are obtaining the requested data,
-                                if we aren't able to fetch quick enough.
-                            */
-                            moveNameModalTitle.innerHTML = 'Obtaining data...'
-                            moveDataEffectDetails.innerHTML = "Obtaining data..."
+                            /* When the user successfully retrieves a Pokémon, 
+                                add a button for them to click and obtain 
+                                additional information about the Pokémon's
+                                ability. This is done by creating a second fetch
+                                call to another API (the URL from the other fetch). */
+                            moreInfoButton.addEventListener('click', () => {
+                                // Open the modal menu.
+                                $('#moreInformationModal').modal()
 
-                            /* Create a second fetch to retrieve the second JSON data.
-                                his request takes the object's URL property as an input,
-                                from which we requested by clicking the Submit button.
-                            */
-                            fetch(moveList.move.url).then((response) => response.json())
-                                .then((data) => {
-                                    moveNameModalTitle.innerHTML = `More information on ${moveList.move.name}`
-                                    /* If the object contains a null value within the Power property,
-                                        let the user know that no Power value is available. */
-                                    if (!data.power) {
-                                        moveDataEffectDetails.innerHTML = `<b>Description:</b>&nbsp;
-                                        ${data.effect_entries[0].effect} <b>Power: This move has no power value.</b>`   
-                                    } else {
-                                        moveDataEffectDetails.innerHTML = `<b>Description:</b>&nbsp;
-                                        ${data.effect_entries[0].effect} <b>Power:</b> ${data.power}`   
-                                    }
+                                /* Let the user know we are obtaining the requested data,
+                                    if we aren't able to fetch quick enough.
+                                */
+                                moveNameModalTitle.innerHTML = 'Obtaining data...'
+                                moveDataEffectDetails.innerHTML = "Obtaining data..."
+
+                                /* Create a second fetch to retrieve the second JSON data.
+                                    his request takes the object's URL property as an input,
+                                    from which we requested by clicking the Submit button.
+                                */
+                                fetch(moveList.move.url).then((response) => response.json())
+                                    .then((data) => {
+                                        moveNameModalTitle.innerHTML = `More information on ${moveList.move.name}`
+                                        /* If the object contains a null value within the Power property,
+                                            let the user know that no Power value is available. */
+                                        if (!data.power) {
+                                            moveDataEffectDetails.innerHTML = `<b>Description:</b>&nbsp;
+                                            ${data.effect_entries[0].effect} <b>Power: This move has no power value.</b>`   
+                                        } else {
+                                            moveDataEffectDetails.innerHTML = `<b>Description:</b>&nbsp;
+                                            ${data.effect_entries[0].effect} <b>Power:</b> ${data.power}`   
+                                        }
+                                    })
                                 })
-                            }
-                        )
                     })
 
                     // Add a timestamp for when the successful retrieval was made.
@@ -130,6 +131,7 @@ let pokemonStatisticsContainer = document.querySelector('#pokemon-statistics-con
                     clear the search box,
                     and prevent further processing.
                 */
+                }
                 }).catch((err) => {
                     console.log(err)
                     searchResultElement.innerHTML = 'ERROR! An unexpected error occured.'
@@ -143,5 +145,5 @@ let pokemonStatisticsContainer = document.querySelector('#pokemon-statistics-con
     // TimeStamp for when the successful retrieval was made.
     function displayTimeStamp() {
         let time = Date()
-        timeElement.innerHTML = `This data was last retrieved at ${time}`
+        timeElement.innerHTML = `This data was last retrieved on ${time}`
     }
